@@ -53,7 +53,22 @@ public class Config
 	
 	public static int loadInt(String path)
 	{
-		return (int) fileConfig.get(path);
+		return fileConfig.getInt(path);
+	}
+	
+	public static String loadString(String path)
+	{
+		return fileConfig.getString(path);
+	}
+	
+	public static double loadDouble(String path)
+	{
+		return fileConfig.getDouble(path);
+	}
+	
+	public static boolean loadBoolean(String path)
+	{
+		return fileConfig.getBoolean(path);
 	}
 
 	public static void setElement(String path, Object var)

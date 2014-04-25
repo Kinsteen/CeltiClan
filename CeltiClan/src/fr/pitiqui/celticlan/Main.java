@@ -14,6 +14,10 @@ import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.bukkit.plugin.InvalidDescriptionException;
+import org.bukkit.plugin.InvalidPluginException;
+import org.bukkit.plugin.Plugin;
+import org.bukkit.plugin.UnknownDependencyException;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import ru.tehkode.permissions.PermissionUser;
@@ -46,11 +50,11 @@ public class Main extends JavaPlugin
 		
 		getServer().getPluginManager().registerEvents(new EventListener(), this);
 		
-		host = (String) Config.loadElement("BDD.clan.host");
-		bdd = (String) Config.loadElement("BDD.clan.database");
-		port = (int) Config.loadInt("BDD.clan.port");
-		user = (String) Config.loadElement("BDD.clan.user");
-		pass = (String) Config.loadElement("BDD.clan.pass");
+		host = Config.loadString("BDD.clan.host");
+		bdd = Config.loadString("BDD.clan.database");
+		port = Config.loadInt("BDD.clan.port");
+		user = Config.loadString("BDD.clan.user");
+		pass = Config.loadString("BDD.clan.pass");
 		
 		try {
 			getLogger().info("Loading driver...");
@@ -725,16 +729,8 @@ public class Main extends JavaPlugin
 						}
 						break;
 						
-					case "reload":
-						if(user.has("clan.reload"))
-						{
-							reloadConfig();
-							sender.sendMessage(prefix + "Config reloaded !");
-						}
-						else
-						{
-							p.sendMessage(prefix + ChatColor.RED + "Vous n'avez pas la permission de recharger le plugin !");
-						}
+					case "restart":
+						restartPlugin();
 						break;
 					
 					default:
@@ -766,6 +762,7 @@ public class Main extends JavaPlugin
 		return result;
 	}
 	
+	@Deprecated
 	public void reloadConfig()
 	{
 		Config.loadConfigFile();
@@ -790,5 +787,22 @@ public class Main extends JavaPlugin
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
+	}
+	
+	@Deprecated
+	public void restartPlugin()
+	{	
+		Plugin p = Bukkit.getPluginManager().getPlugin("CeltiClan");
+		Bukkit.getServer().getPluginManager().disablePlugin(p);
+		try
+		{
+			Bukkit.getPluginManager().loadPlugin(new File("plugins/CeltiClan.jar"));
+		}
+		catch (UnknownDependencyException | InvalidPluginException| InvalidDescriptionException e)
+		{
+			e.printStackTrace();
+		}
+		p = Bukkit.getPluginManager().getPlugin("CeltiClan");
+		Bukkit.getPluginManager().enablePlugin(p);
 	}
 }
