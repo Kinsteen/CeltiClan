@@ -43,6 +43,8 @@ public class Main extends JavaPlugin
 	Connection connection = null;
 	static Statement stat;
 	
+	Location loc = null;
+	
 	HashMap<String, String> chat = new HashMap<String, String>();
 	
 	public void onEnable()
@@ -763,16 +765,23 @@ public class Main extends JavaPlugin
 						{
 							p.sendMessage(prefix + ChatColor.GREEN + "Téléportation dans 5 secondes...");
 							final Player player = p;
-							final Location loc = new Location(Bukkit.getServer().getWorld(configHome.loadString("home." + getClan(p) + ".world")), configHome.loadInt("home." + getClan(p) + ".x"), configHome.loadInt("home." + getClan(p) + ".y"), configHome.loadInt("home." + getClan(p) + ".z"), (float) configHome.loadDouble("home." + getClan(p) + ".yaw"), (float) configHome.loadDouble("home." + getClan(p) + ".pitch"));
-							Bukkit.getScheduler().scheduleSyncDelayedTask(this, new Runnable()
+							loc = null;
+							try
 							{
-								@Override
-								public void run()
+								loc = new Location(Bukkit.getServer().getWorld(configHome.loadString("home." + getClan(p) + ".world")), configHome.loadInt("home." + getClan(p) + ".x"), configHome.loadInt("home." + getClan(p) + ".y"), configHome.loadInt("home." + getClan(p) + ".z"), (float) configHome.loadDouble("home." + getClan(p) + ".yaw"), (float) configHome.loadDouble("home." + getClan(p) + ".pitch"));
+								Bukkit.getScheduler().scheduleSyncDelayedTask(this, new Runnable()
 								{
-									player.teleport(loc);
-								}
-							}, 60L);
-
+									@Override
+									public void run()
+									{
+										player.teleport(loc);
+									}
+								}, 60L);
+							}
+							catch(IllegalArgumentException e)
+							{
+								p.sendMessage("gsojhqothjqoijhoqiejthoisetoyhogxf");
+							}
 						}
 						else
 						{
