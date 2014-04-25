@@ -22,7 +22,6 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 import ru.tehkode.permissions.PermissionUser;
 import ru.tehkode.permissions.bukkit.PermissionsEx;
-import fr.pitiqui.celticlan.Config;
 
 public class Main extends JavaPlugin
 {
@@ -36,6 +35,8 @@ public class Main extends JavaPlugin
 	String user;
 	String pass;
 	String url;
+	
+	Config config = new Config();
 
 	Connection connection = null;
 	static Statement stat;
@@ -44,17 +45,19 @@ public class Main extends JavaPlugin
 	
 	public void onEnable()
 	{
-		dataFolder = this.getDataFolder();
+		config.setDataFolder(getDataFolder());
 		
-		Config.loadConfigFile();
+		config.initConfig("BDD.clan.host", "localhost", "BDD.clan.port", "3306", "BDD.clan.database", "CeltiClan", "BDD.clan.user", "root", "BDD.clan.pass", "");
+		
+		config.loadConfigFile();
 		
 		getServer().getPluginManager().registerEvents(new EventListener(), this);
 		
-		host = Config.loadString("BDD.clan.host");
-		bdd = Config.loadString("BDD.clan.database");
-		port = Config.loadInt("BDD.clan.port");
-		user = Config.loadString("BDD.clan.user");
-		pass = Config.loadString("BDD.clan.pass");
+		host = config.loadString("BDD.clan.host");
+		bdd = config.loadString("BDD.clan.database");
+		port = config.loadInt("BDD.clan.port");
+		user = config.loadString("BDD.clan.user");
+		pass = config.loadString("BDD.clan.pass");
 		
 		try {
 			getLogger().info("Loading driver...");
@@ -86,11 +89,6 @@ public class Main extends JavaPlugin
 		{
 			chat.remove(p.getUniqueId());
 		}
-	}
-	
-	public static File dataFolder()
-	{
-		return dataFolder;
 	}
 	
 	@SuppressWarnings("deprecation")
@@ -763,15 +761,15 @@ public class Main extends JavaPlugin
 	}
 	
 	@Deprecated
-	public void reloadConfig()
+	public void reloadconfig()
 	{
-		Config.loadConfigFile();
+		config.loadConfigFile();
 		
-		host = (String) Config.loadElement("BDD.clan.host");
-		bdd = (String) Config.loadElement("BDD.clan.database");
-		port = (int) Config.loadInt("BDD.clan.port");
-		user = (String) Config.loadElement("BDD.clan.user");
-		pass = (String) Config.loadElement("BDD.clan.pass");
+		host = config.loadString("BDD.clan.host");
+		bdd = config.loadString("BDD.clan.database");
+		port = config.loadInt("BDD.clan.port");
+		user = config.loadString("BDD.clan.user");
+		pass = config.loadString("BDD.clan.pass");
 		
 		try {
 			getLogger().info("Connecting database...");

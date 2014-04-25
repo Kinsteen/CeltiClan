@@ -8,21 +8,21 @@ import org.bukkit.configuration.file.YamlConfiguration;
 
 public class Config
 {
-	private static File file;
-	static FileConfiguration fileConfig;
+	File file;
+	FileConfiguration fileConfig;
+	File dataFolder;
 	
-	public static void loadConfigFile()
+	public void setDataFolder(File dataFolderFunc)
 	{
-		file = new File(Main.dataFolder(), "config.yml");
+		dataFolder = dataFolderFunc;
+	}
+	
+	public void loadConfigFile()
+	{
+		file = new File(dataFolder, "config.yml");
 		if(!file.exists())
 		{
 			fileConfig = YamlConfiguration.loadConfiguration(file);
-			
-			fileConfig.set("BDD.clan.host", "");
-			fileConfig.set("BDD.clan.port", "");
-			fileConfig.set("BDD.clan.database", "");
-			fileConfig.set("BDD.clan.user", "");
-			fileConfig.set("BDD.clan.pass", "");
 	 
 			try {
 				fileConfig.save(file);
@@ -33,12 +33,97 @@ public class Config
 		fileConfig = YamlConfiguration.loadConfiguration(file);
 	}
 	
-	public static void saveConfigFile()
+	public void initConfig(String path1, String var1)
 	{
-		file = new File(Main.dataFolder(), "config.yml");
+		loadConfigFile();
+		if(!file.exists())
+		{
+			fileConfig.set(path1, var1);
+			saveConfigFile();
+		}
+	}
+	public void initConfig(String path1, String var1, String path2, String var2)
+	{
+		loadConfigFile();
+		if(!file.exists())
+		{
+			fileConfig.set(path1, var1);
+			fileConfig.set(path2, var2);
+			saveConfigFile();
+		}
+	}
+	public void initConfig(String path1, String var1, String path2, String var2, String path3, String var3)
+	{
+		loadConfigFile();
+		if(!file.exists())
+		{
+			fileConfig.set(path1, var1);
+			fileConfig.set(path2, var2);
+			fileConfig.set(path3, var3);
+			saveConfigFile();
+		}
+	}
+	public void initConfig(String path1, String var1, String path2, String var2, String path3, String var3, String path4, String var4)
+	{
+		loadConfigFile();
+		if(!file.exists())
+		{
+			fileConfig.set(path1, var1);
+			fileConfig.set(path2, var2);
+			fileConfig.set(path3, var3);
+			fileConfig.set(path4, var4);
+			saveConfigFile();
+		}
+	}
+	public void initConfig(String path1, String var1, String path2, String var2, String path3, String var3, String path4, String var4, String path5, String var5)
+	{
+		loadConfigFile();
+		if(!file.exists())
+		{
+			fileConfig.set(path1, var1);
+			fileConfig.set(path2, var2);
+			fileConfig.set(path3, var3);
+			fileConfig.set(path4, var4);
+			fileConfig.set(path5, var5);
+			saveConfigFile();
+		}
+	}
+	public void initConfig(String path1, String var1, String path2, String var2, String path3, String var3, String path4, String var4, String path5, String var5, String path6, String var6)
+	{
+		loadConfigFile();
+		if(!file.exists())
+		{
+			fileConfig.set(path1, var1);
+			fileConfig.set(path2, var2);
+			fileConfig.set(path3, var3);
+			fileConfig.set(path4, var4);
+			fileConfig.set(path5, var5);
+			fileConfig.set(path6, var6);
+			saveConfigFile();
+		}
+	}
+	public void initConfig(String path1, String var1, String path2, String var2, String path3, String var3, String path4, String var4, String path5, String var5, String path6, String var6, String path7, String var7)
+	{
+		loadConfigFile();
+		if(!file.exists())
+		{
+			fileConfig.set(path1, var1);
+			fileConfig.set(path2, var2);
+			fileConfig.set(path3, var3);
+			fileConfig.set(path4, var4);
+			fileConfig.set(path5, var5);
+			fileConfig.set(path6, var6);
+			fileConfig.set(path7, var7);
+			saveConfigFile();
+		}
+	}
+	
+	public void saveConfigFile()
+	{
+		file = new File(dataFolder, "config.yml");
 		fileConfig = YamlConfiguration.loadConfiguration(file);
 		
-		try // Puis on sauvegarde!
+		try
 		{
 			fileConfig.save(file);
 		} catch(IOException ex)	{
@@ -46,38 +131,37 @@ public class Config
 		}
 	}
 	
-	public static Object loadElement(String path)
+	public Object loadElement(String path)
 	{
 		return fileConfig.get(path);
 	}
 	
-	public static int loadInt(String path)
+	public int loadInt(String path)
 	{
 		return fileConfig.getInt(path);
 	}
 	
-	public static String loadString(String path)
+	public String loadString(String path)
 	{
 		return fileConfig.getString(path);
 	}
 	
-	public static double loadDouble(String path)
+	public double loadDouble(String path)
 	{
 		return fileConfig.getDouble(path);
 	}
 	
-	public static boolean loadBoolean(String path)
+	public boolean loadBoolean(String path)
 	{
 		return fileConfig.getBoolean(path);
 	}
 
-	public static void setElement(String path, Object var)
+	public void setElement(String path, Object var)
 	{
 		fileConfig.set(path, var);
 		try {
 			fileConfig.save(file);
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
