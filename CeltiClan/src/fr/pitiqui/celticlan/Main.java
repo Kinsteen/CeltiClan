@@ -11,6 +11,7 @@ import java.util.UUID;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.Location;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -37,6 +38,7 @@ public class Main extends JavaPlugin
 	String url;
 	
 	Config config = new Config();
+	ConfigHome configHome = new ConfigHome();
 
 	Connection connection = null;
 	static Statement stat;
@@ -46,10 +48,13 @@ public class Main extends JavaPlugin
 	public void onEnable()
 	{
 		config.setDataFolder(getDataFolder());
+		configHome.setDataFolder(getDataFolder());
 		
 		config.initConfig("BDD.clan.host", "localhost", "BDD.clan.port", "3306", "BDD.clan.database", "CeltiClan", "BDD.clan.user", "root", "BDD.clan.pass", "");
+		configHome.initConfig("", "");
 		
 		config.loadConfigFile();
+		configHome.loadConfigFile();
 		
 		getServer().getPluginManager().registerEvents(new EventListener(), this);
 		
@@ -85,10 +90,6 @@ public class Main extends JavaPlugin
 	
 	public void onDisable()
 	{
-		for(Player p : Bukkit.getServer().getOnlinePlayers())
-		{
-			chat.remove(p.getUniqueId());
-		}
 	}
 	
 	@SuppressWarnings("deprecation")
@@ -106,7 +107,7 @@ public class Main extends JavaPlugin
 		{
 			if(args.length == 0)
 			{
-				p.sendMessage(ChatColor.RED + "CeltiClan v0.1.5");
+				p.sendMessage(ChatColor.RED + "CeltiClan v0.1.6");
 			}
 			else
 			{
@@ -739,6 +740,45 @@ public class Main extends JavaPlugin
 					case "restart":
 						restartPlugin();
 						break;
+						
+					case "sethome":
+						if(isChef(p))
+						{
+							configHome.setElement("home." + getClan(p) + ".world", p.getLocation().getWorld().getName());
+							configHome.setElement("home." + getClan(p) + ".x", p.getLocation().getBlockX());
+							configHome.setElement("home." + getClan(p) + ".y", p.getLocation().getBlockY());
+							configHome.setElement("home." + getClan(p) + ".z", p.getLocation().getBlockZ());
+							configHome.setElement("home." + getClan(p) + ".pitch", p.getLocation().getPitch());
+							configHome.setElement("home." + getClan(p) + ".yaw", p.getLocation().getYaw());
+							p.sendMessage(prefix + ChatColor.GREEN + "Le home de votre clan a été placé !");
+						}
+						else
+						{
+							p.sendMessage(prefix + ChatColor.RED + "Vous n'etes pas proprietaire du clan !");
+						}
+						break;
+						
+					case "home":
+						if(isInClan(p))
+						{
+							p.sendMessage(prefix + ChatColor.GREEN + "Téléportation dans 5 secondes...");
+							final Player player = p;
+							final Location loc = new Location(Bukkit.getServer().getWorld(configHome.loadString("home." + getClan(p) + ".world")), configHome.loadInt("home." + getClan(p) + ".x"), configHome.loadInt("home." + getClan(p) + ".y"), configHome.loadInt("home." + getClan(p) + ".z"), (float) configHome.loadDouble("home." + getClan(p) + ".yaw"), (float) configHome.loadDouble("home." + getClan(p) + ".pitch"));
+							Bukkit.getScheduler().scheduleSyncDelayedTask(this, new Runnable()
+							{
+								@Override
+								public void run()
+								{
+									player.teleport(loc);
+								}
+							}, 60L);
+
+						}
+						else
+						{
+							p.sendMessage(prefix + ChatColor.RED + "Vous n'etes pas dans un clan");
+						}
+						break;
 					
 					default:
 						p.sendMessage(prefix + ChatColor.RED + "Cette commande n'a pas été trouvé !");
@@ -754,7 +794,8 @@ public class Main extends JavaPlugin
 		ResultSet res = null;
 		String result = null;
 		
-		try {
+		try
+		{
 			res = stat.executeQuery("SELECT clan FROM core_players WHERE joueur='" + p.getUniqueId() + "'");
 			
 			while(res.next())
@@ -767,6 +808,72 @@ public class Main extends JavaPlugin
 		}
 		
 		return result;
+	}
+	
+	public boolean isInClan(Player player)
+	{
+		ResultSet res = null;
+		boolean find = false;
+		
+		try
+		{
+			res = stat.executeQuery("SELECT * FROM core_players WHERE joueur='" + player.getUniqueId().toString() + "'");
+			
+			while(res.next())
+			{
+				if(res.getString("joueur").equalsIgnoreCase(player.getUniqueId().toString()))
+				{
+					find = true;
+					break;
+				}
+			}
+			
+			if(find == true)
+			{
+				return true;
+			}
+			else
+			{
+				return false;
+			}
+		}
+		catch(SQLException e)
+		{
+			e.printStackTrace();
+		}
+		return false;
+	}
+	
+	public boolean isChef(Player player)
+	{
+		ResultSet res = null;
+		boolean find = false;
+		try
+		{
+			res = stat.executeQuery("SELECT chef FROM core_clan WHERE chef='" + player.getUniqueId().toString() + "'");
+			
+			while(res.next())
+			{
+				if(res.getString("chef").equalsIgnoreCase(player.getUniqueId().toString()))
+				{
+					find = true;
+				}
+			}
+			
+			if(find == true)
+			{
+				return true;
+			}
+			else
+			{
+				return false;
+			}
+		}
+		catch(SQLException e)
+		{
+			e.printStackTrace();
+		}
+		return false;
 	}
 	
 	@Deprecated
