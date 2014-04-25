@@ -106,7 +106,7 @@ public class Main extends JavaPlugin
 		{
 			if(args.length == 0)
 			{
-				p.sendMessage(ChatColor.RED + "CeltiClan v0.1.3");
+				p.sendMessage(ChatColor.RED + "CeltiClan v0.1.5");
 			}
 			else
 			{
@@ -126,15 +126,31 @@ public class Main extends JavaPlugin
 									break;
 									
 								case 3:
-									try
-									{
-										stat.executeUpdate("INSERT INTO core_clan (`clan`, `sigle`, `chef`, `invit`) VALUES ('" + args[1] + "', '"+ args[2] +"', '" + p.getUniqueId().toString() + "', '1');");
-										stat.executeUpdate("INSERT INTO core_players (`joueur`, `clan`) VALUES ('" + p.getUniqueId().toString() + "', '"+ args[1] +"');");
-										p.sendMessage(prefix + ChatColor.GREEN + "Vous avez crée le clan " + args[1] + " !");
-									}
-									catch (SQLException e)
-									{
-										e.printStackTrace();
+									try {
+										ResultSet res = stat.executeQuery("SELECT clan FROM core_clan");
+										boolean find = false;
+										
+										while(res.next())
+										{
+											if(res.getString("clan").equalsIgnoreCase(args[1]))
+											{
+												find = true;
+												break;
+											}
+										}
+										
+										if(find == true)
+										{
+											p.sendMessage(prefix + ChatColor.RED + "Un clan sous le nom de " + args[1] + " a deja été créer.");
+										}
+										else
+										{
+											stat.executeUpdate("INSERT INTO core_clan (`clan`, `sigle`, `chef`, `invit`) VALUES ('" + args[1] + "', '"+ args[2] +"', '" + p.getUniqueId().toString() + "', '1');");
+											stat.executeUpdate("INSERT INTO core_players (`joueur`, `clan`) VALUES ('" + p.getUniqueId().toString() + "', '"+ args[1] +"');");
+											p.sendMessage(prefix + ChatColor.GREEN + "Vous avez crée le clan " + args[1] + " !");
+										}
+									} catch (SQLException e1) {
+										e1.printStackTrace();
 									}
 									break;
 									
@@ -501,8 +517,6 @@ public class Main extends JavaPlugin
 						break;
 						
 					case "kick":
-						if(user.has("clan.kick"))
-						{
 							switch(args.length)
 							{
 								case 1:
@@ -586,11 +600,6 @@ public class Main extends JavaPlugin
 								default:
 									break;
 							}
-						}
-						else
-						{
-							p.sendMessage(prefix + ChatColor.RED + "Vous n'avez pas la permission d'expulser un joueur !");
-						}
 						break;
 						
 					case "admin":
