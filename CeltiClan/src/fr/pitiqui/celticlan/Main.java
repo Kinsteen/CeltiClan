@@ -24,7 +24,7 @@ public class Main extends JavaPlugin
 {
 	static File dataFolder;
 	
-	String prefix = ChatColor.RED + "[CeltiClan] " + ChatColor.RESET;
+	static String prefix = ChatColor.RED + "[CeltiClan] " + ChatColor.RESET;
 	
 	String host;
 	String bdd;
@@ -44,7 +44,7 @@ public class Main extends JavaPlugin
 	
 	Location loc = null;
 	
-	HashMap<String, String> chat = new HashMap<String, String>();
+	static HashMap<String, String> invit = new HashMap<String, String>();
 	
 	public void onEnable()
 	{
@@ -111,7 +111,7 @@ public class Main extends JavaPlugin
 		{
 			if(args.length == 0)
 			{
-				p.sendMessage(ChatColor.RED + "CeltiClan v0.1.8");
+				p.sendMessage(ChatColor.RED + "CeltiClan v0.1.9");
 			}
 			else
 			{
@@ -442,6 +442,19 @@ public class Main extends JavaPlugin
 												stat.executeUpdate("INSERT INTO `" + table_invit + "`(`clan`, `joueur`) VALUES ('" + clanName + "','" + Bukkit.getServer().getPlayer(args[1]).getUniqueId().toString() + "')");
 											} catch (SQLException e) {
 												e.printStackTrace();
+											}
+											
+											for(Player p1 : Bukkit.getOnlinePlayers())
+											{
+												if(Bukkit.getServer().getPlayer(args[1]).getUniqueId().toString().equalsIgnoreCase(p1.getUniqueId().toString()))
+												{
+													p1.sendMessage(prefix + ChatColor.YELLOW + p + " vous a invité dans le clan " + clanName);
+													p1.sendMessage(prefix + ChatColor.YELLOW + "Pour rejoindre le clan, faites /clan join " + clanName);
+												}
+												else
+												{
+													invit.put(p1.getUniqueId().toString(), clanName);
+												}
 											}
 											p.sendMessage(prefix + ChatColor.GREEN + "Vous avez invité " + args[1]);
 										}
@@ -777,7 +790,7 @@ public class Main extends JavaPlugin
 							}
 							catch(IllegalArgumentException e)
 							{
-								p.sendMessage(prefix + ChatColor.RED + "Le home de votre clan a été placé !");
+								p.sendMessage(prefix + ChatColor.RED + "Le home de votre clan n'a pas été placé !");
 							}
 						}
 						else
@@ -793,7 +806,6 @@ public class Main extends JavaPlugin
 							stat.executeUpdate("CREATE TABLE clan_invit(id INT KEY AUTO_INCREMENT, clan VARCHAR(255), joueur VARCHAR(255))");
 							sender.sendMessage("Database has been created !");
 						} catch (SQLException e) {
-							// TODO Auto-generated catch block
 							e.printStackTrace();
 						}
 						break;
