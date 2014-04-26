@@ -302,33 +302,26 @@ public class Main extends JavaPlugin
 									ResultSet res = null;
 									try
 									{
-										res = stat.executeQuery("SELECT * FROM " + table_clan);
-										
-										while(res.next())
+										if(isChef(p))
 										{
-											if(res.getString("chef").equalsIgnoreCase(p.getUniqueId().toString()))
+											if(args[1].equalsIgnoreCase("true"))
 											{
-												findInvit = true;
-												if(args[1].equalsIgnoreCase("true"))
-												{
-													stat.executeUpdate("UPDATE " + table_clan + " SET invit=0 WHERE `chef`='" + p.getUniqueId().toString() +"'");
-													p.sendMessage(prefix + ChatColor.GREEN + "Vous avez défini les invitations de votre clan a privé");
-													break;
-												}
-												else if(args[1].equalsIgnoreCase("false"))
-												{
-													stat.executeUpdate("UPDATE " + table_clan + " SET invit=1 WHERE `chef`='" + p.getUniqueId().toString() +"'");
-													p.sendMessage(prefix + ChatColor.GREEN + "Vous avez défini les invitations de votre clan a libre");
-													break;
-												}
-												else
-												{
-													p.sendMessage(prefix + ChatColor.RED + "true = Invitation obligatoires, false = tout le monde peut rejoindre");
-												}
+												stat.executeUpdate("UPDATE " + table_clan + " SET invit=0 WHERE `chef`='" + p.getUniqueId().toString() +"'");
+												p.sendMessage(prefix + ChatColor.GREEN + "Vous avez défini les invitations de votre clan a privé");
+												break;
+											}
+											else if(args[1].equalsIgnoreCase("false"))
+											{
+												stat.executeUpdate("UPDATE " + table_clan + " SET invit=1 WHERE `chef`='" + p.getUniqueId().toString() +"'");
+												p.sendMessage(prefix + ChatColor.GREEN + "Vous avez défini les invitations de votre clan a libre");
+												break;
+											}
+											else
+											{
+												p.sendMessage(prefix + ChatColor.RED + "true = Invitation obligatoires, false = tout le monde peut rejoindre");
 											}
 										}
-										
-										if(findInvit == false)
+										else
 										{
 											p.sendMessage(prefix + ChatColor.RED + "Vous n'êtes pas proprietaires d'un clan !");
 											findInvit = false;
@@ -355,8 +348,8 @@ public class Main extends JavaPlugin
 						if(user.has("clan.leave"))
 						{
 							ResultSet res = null;
-							boolean findLeave = false;
 							boolean deletePlayer = false;
+							boolean findLeave = false;
 							String clanName = null;
 							try
 							{
@@ -372,11 +365,11 @@ public class Main extends JavaPlugin
 									}
 								}
 								
-								if(findLeave == false)
+								if(!isInClan(p))
 								{
 									p.sendMessage(prefix + ChatColor.RED + "Vous n'êtes pas dans un clan");
 								}
-								if(findLeave == true)
+								else
 								{
 									res  = stat.executeQuery("SELECT * FROM " + table_clan);
 									while(res.next())
@@ -418,54 +411,31 @@ public class Main extends JavaPlugin
 									break;
 									
 								case 2:
-									ResultSet res = null;
-									boolean findInvit = false;
 									String clanName = null;
 									
-									try
+									if(isChef(p))
 									{
-										res = stat.executeQuery("SELECT * FROM " + table_clan);
+										try {
+											stat.executeUpdate("INSERT INTO `" + table_invit + "`(`clan`, `joueur`) VALUES ('" + clanName + "','" + Bukkit.getServer().getPlayer(args[1]).getUniqueId().toString() + "')");
+										} catch (SQLException e) { e.printStackTrace(); }
 										
-										while(res.next())
+										for(Player p1 : Bukkit.getOnlinePlayers())
 										{
-											if(res.getString("chef").equalsIgnoreCase(p.getUniqueId().toString()))
+											if(Bukkit.getServer().getPlayer(args[1]).getUniqueId().toString().equalsIgnoreCase(p1.getUniqueId().toString()))
 											{
-												findInvit = true;
-												clanName = res.getString("clan");
-												break;
+												p1.sendMessage(prefix + ChatColor.YELLOW + p + " vous a invité dans le clan " + clanName);
+												p1.sendMessage(prefix + ChatColor.YELLOW + "Pour rejoindre le clan, faites /clan join " + clanName);
 											}
-										}
-										
-										if(findInvit == true)
-										{
-											try {
-												stat.executeUpdate("INSERT INTO `" + table_invit + "`(`clan`, `joueur`) VALUES ('" + clanName + "','" + Bukkit.getServer().getPlayer(args[1]).getUniqueId().toString() + "')");
-											} catch (SQLException e) {
-												e.printStackTrace();
-											}
-											
-											for(Player p1 : Bukkit.getOnlinePlayers())
+											else
 											{
-												if(Bukkit.getServer().getPlayer(args[1]).getUniqueId().toString().equalsIgnoreCase(p1.getUniqueId().toString()))
-												{
-													p1.sendMessage(prefix + ChatColor.YELLOW + p + " vous a invité dans le clan " + clanName);
-													p1.sendMessage(prefix + ChatColor.YELLOW + "Pour rejoindre le clan, faites /clan join " + clanName);
-												}
-												else
-												{
-													invit.put(p1.getUniqueId().toString(), clanName);
-												}
+												invit.put(p1.getUniqueId().toString(), clanName);
 											}
-											p.sendMessage(prefix + ChatColor.GREEN + "Vous avez invité " + args[1]);
 										}
-										else
-										{
-											p.sendMessage(prefix + ChatColor.RED + "Vous n'êtes pas proprietaire d'un clan");
-										}
+										p.sendMessage(prefix + ChatColor.GREEN + "Vous avez invité " + args[1]);
 									}
-									catch (SQLException e1)
+									else
 									{
-										e1.printStackTrace();
+										p.sendMessage(prefix + ChatColor.RED + "Vous n'êtes pas proprietaire d'un clan");
 									}
 									break;
 	
@@ -506,14 +476,14 @@ public class Main extends JavaPlugin
 									break;
 									
 								case 2:
-									ResultSet res1 = null;
+									ResultSet resJoueur = null;
 									try
 									{
 										p.sendMessage(prefix + ChatColor.YELLOW + "Liste des joueurs du clan " + args[1] + ":");
-										res1 = stat.executeQuery("SELECT * FROM " + table_players + " WHERE clan='" + args[1] + "';");
-										while(res1.next())
+										resJoueur = stat.executeQuery("SELECT joueur FROM " + table_players + " WHERE clan='" + args[1] + "';");
+										while(resJoueur.next())
 										{
-											p.sendMessage(ChatColor.YELLOW + getServer().getPlayer(UUID.fromString(res1.getString("joueur"))).getName());
+											p.sendMessage(ChatColor.YELLOW + getServer().getPlayer(UUID.fromString(resJoueur.getString("joueur"))).getName());
 										}
 									}
 									catch(SQLException e)
@@ -541,53 +511,18 @@ public class Main extends JavaPlugin
 									break;
 									
 								case 2:
-									ResultSet res = null;
-									boolean findInvit = false;
-									boolean ok = false;
-									String playName = null;
+									String playerName = null;
 									
 									try
 									{
-										res = stat.executeQuery("SELECT * FROM " + table_clan);
-										
-										while(res.next())
-										{
-											if(res.getString("chef").equalsIgnoreCase(p.getUniqueId().toString()))
+										if(isChef(p))
+										{									
+											try
 											{
-												try
+												playerName = getServer().getPlayer(args[1]).getUniqueId().toString();
+												if(getClan(getServer().getPlayer(playerName)).equalsIgnoreCase(getClan(p)))
 												{
-													playName = getServer().getPlayer(args[1]).getUniqueId().toString();
-												}
-												catch(NullPointerException e)
-												{
-													p.sendMessage(prefix + ChatColor.RED + "Le joueur n'existe pas !");
-													break;
-												}
-												findInvit = true;
-												ok = true;
-												break;
-											}
-										}
-										
-										if(ok == true)
-										{
-											if(findInvit == true)
-											{
-												boolean youMad = false;
-												res = stat.executeQuery("SELECT * FROM " + table_players);
-												
-												while(res.next())
-												{
-													if(res.getString("joueur").equalsIgnoreCase(getServer().getPlayer(args[1]).getUniqueId().toString()))
-													{
-														youMad = true;
-														break;
-													}
-												}
-												
-												if(youMad == true)
-												{
-													stat.executeUpdate("DELETE FROM " + table_players + " WHERE joueur='" + playName + "'");
+													stat.executeUpdate("DELETE FROM " + table_players + " WHERE joueur='" + playerName + "'");
 													p.sendMessage(prefix + ChatColor.GREEN + "Le joueur " + args[1] + " a été kické !");
 													for(Player onlinePlayer : Bukkit.getServer().getOnlinePlayers())
 													{
@@ -602,9 +537,9 @@ public class Main extends JavaPlugin
 													p.sendMessage(prefix + ChatColor.RED + "Le joueur n'est pas dans votre clan !");
 												}
 											}
-											else
+											catch(NullPointerException e)
 											{
-												p.sendMessage(prefix + ChatColor.RED + "Vous n'êtes pas proprietaire d'un clan !");
+												p.sendMessage(prefix + ChatColor.RED + "Le joueur n'existe pas !");
 											}
 										}
 									}
@@ -813,6 +748,19 @@ public class Main extends JavaPlugin
 					case "reload":
 						reloadconfig();
 						sender.sendMessage("CeltiClan reloaded.");
+						break;
+						
+					case "help":
+						sender.sendMessage(ChatColor.YELLOW + "/clan create <nom du clan> <sigle du clan> : Créer un clan avec les paramètres nom du clan et un sigle (Acronyme)");
+						sender.sendMessage(ChatColor.YELLOW + "/clan setinvit <true | false> : " + ChatColor.BOLD + ChatColor.RED + "Uniquement pour les chefs" + ChatColor.YELLOW +" : Permet de définir si les invitations sont requises (true = invit requises, false = entrée libre)");
+						sender.sendMessage(ChatColor.YELLOW + "/clan invit <nom du joueur> : " + ChatColor.BOLD + ChatColor.RED + "Uniquement pour les chefs" + ChatColor.YELLOW +" : Inviter un joueur");
+						sender.sendMessage(ChatColor.YELLOW + "/clan join <nom du clan> : Rejoindre un clan");
+						sender.sendMessage(ChatColor.YELLOW + "/clan leave : Permet de quitter un clan (si vous êtes le chef, cela va supprimer le clan)");
+						sender.sendMessage(ChatColor.YELLOW + "/clan list : Permet de voir tout les clans du serveur");
+						sender.sendMessage(ChatColor.YELLOW + "/clan list <nom du clan> : Permet de voir les joueurs d'un clan");
+						sender.sendMessage(ChatColor.YELLOW + "/clan kick : " + ChatColor.BOLD + ChatColor.RED + "Uniquement pour les chefs" + ChatColor.YELLOW +" : Permet d'expulser un joueur du clan");
+						sender.sendMessage(ChatColor.YELLOW + "/clan sethome : " + ChatColor.BOLD + ChatColor.RED + "Uniquement pour les chefs" + ChatColor.YELLOW +" : Déterminer le home du clan");
+						sender.sendMessage(ChatColor.YELLOW + "/clan home : Téléportation après 5 secondes au home du clan.");
 						break;
 					
 					default:
