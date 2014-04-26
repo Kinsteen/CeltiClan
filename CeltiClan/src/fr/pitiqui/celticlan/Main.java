@@ -111,7 +111,7 @@ public class Main extends JavaPlugin
 		{
 			if(args.length == 0)
 			{
-				p.sendMessage(ChatColor.RED + "CeltiClan v0.1.6");
+				p.sendMessage(ChatColor.RED + "CeltiClan v0.1.8");
 			}
 			else
 			{
@@ -483,7 +483,7 @@ public class Main extends JavaPlugin
 										
 										while(res.next())
 										{
-											p.sendMessage(prefix + ChatColor.YELLOW + res.getString("clan"));
+											p.sendMessage(ChatColor.YELLOW + res.getString("clan"));
 										}
 									}
 									catch(SQLException e)
@@ -500,8 +500,7 @@ public class Main extends JavaPlugin
 										res1 = stat.executeQuery("SELECT * FROM " + table_players + " WHERE clan='" + args[1] + "';");
 										while(res1.next())
 										{
-											UUID uuid = UUID.fromString(res1.getString("joueur"));
-											p.sendMessage(prefix + ChatColor.YELLOW + getServer().getPlayer(uuid).getName());
+											p.sendMessage(ChatColor.YELLOW + getServer().getPlayer(UUID.fromString(res1.getString("joueur"))).getName());
 										}
 									}
 									catch(SQLException e)
@@ -797,6 +796,11 @@ public class Main extends JavaPlugin
 							// TODO Auto-generated catch block
 							e.printStackTrace();
 						}
+						break;
+						
+					case "reload":
+						reloadconfig();
+						sender.sendMessage("CeltiClan reloaded.");
 						break;
 					
 					default:

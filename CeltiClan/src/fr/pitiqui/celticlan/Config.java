@@ -182,7 +182,12 @@ public class Config
 			fileConfig.set(path5, var5);
 			fileConfig.set(path6, var6);
 			fileConfig.set(path7, var7);
-			saveConfigFile();
+			fileConfig.set(path8, var8);
+			try {
+				fileConfig.save(file);
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
 		}
 	}
 }
