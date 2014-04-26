@@ -330,7 +330,7 @@ public class Main extends JavaPlugin
 										
 										if(findInvit == false)
 										{
-											p.sendMessage(prefix + ChatColor.RED + "Vous n'etes pas proprietaires d'un clan !");
+											p.sendMessage(prefix + ChatColor.RED + "Vous n'êtes pas proprietaires d'un clan !");
 											findInvit = false;
 										}
 									}
@@ -374,7 +374,7 @@ public class Main extends JavaPlugin
 								
 								if(findLeave == false)
 								{
-									p.sendMessage(prefix + ChatColor.RED + "Vous n'etes pas dans un clan");
+									p.sendMessage(prefix + ChatColor.RED + "Vous n'êtes pas dans un clan");
 								}
 								if(findLeave == true)
 								{
@@ -447,7 +447,7 @@ public class Main extends JavaPlugin
 										}
 										else
 										{
-											p.sendMessage(prefix + ChatColor.RED + "Vous n'etes pas proprietaire d'un clan");
+											p.sendMessage(prefix + ChatColor.RED + "Vous n'êtes pas proprietaire d'un clan");
 										}
 									}
 									catch (SQLException e1)
@@ -592,7 +592,7 @@ public class Main extends JavaPlugin
 											}
 											else
 											{
-												p.sendMessage(prefix + ChatColor.RED + "Vous n'etes pas proprietaire d'un clan !");
+												p.sendMessage(prefix + ChatColor.RED + "Vous n'êtes pas proprietaire d'un clan !");
 											}
 										}
 									}
@@ -716,7 +716,7 @@ public class Main extends JavaPlugin
 												}
 												else
 												{
-													p.sendMessage(prefix + ChatColor.RED + "Le joueur n'appartient pas a un clan !");
+													p.sendMessage(prefix + ChatColor.RED + "Le joueur n'appartient pas à un clan !");
 												}
 											}
 											catch (SQLException e)
@@ -754,7 +754,7 @@ public class Main extends JavaPlugin
 						}
 						else
 						{
-							p.sendMessage(prefix + ChatColor.RED + "Vous n'etes pas proprietaire du clan !");
+							p.sendMessage(prefix + ChatColor.RED + "Vous n'êtes pas proprietaire du clan !");
 						}
 						break;
 						
@@ -783,7 +783,7 @@ public class Main extends JavaPlugin
 						}
 						else
 						{
-							p.sendMessage(prefix + ChatColor.RED + "Vous n'etes pas dans un clan");
+							p.sendMessage(prefix + ChatColor.RED + "Vous n'êtes pas dans un clan");
 						}
 						break;
 					
