@@ -891,6 +891,8 @@ public class Main extends JavaPlugin
 	{
 		config.loadConfigFile();
 		
+		config.initConfig("BDD.clan.host", "localhost", "BDD.clan.port", "3306", "BDD.clan.database", "CeltiClan", "BDD.clan.user", "root", "BDD.clan.pass", "", "BDD.clan.table_invit", "clan_invit", "BDD.clan.table_players", "clan_players", "BDD.clan.table_clan", "clan_clan");
+		
 		host = config.loadString("BDD.clan.host");
 		bdd = config.loadString("BDD.clan.database");
 		port = config.loadInt("BDD.clan.port");
