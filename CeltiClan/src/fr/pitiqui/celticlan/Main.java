@@ -739,10 +739,6 @@ public class Main extends JavaPlugin
 						}
 						break;
 						
-					case "restart":
-						restartPlugin();
-						break;
-						
 					case "sethome":
 						if(isChef(p))
 						{
@@ -885,7 +881,6 @@ public class Main extends JavaPlugin
 		return false;
 	}
 	
-	@Deprecated
 	public void reloadconfig()
 	{
 		config.loadConfigFile();
@@ -910,22 +905,5 @@ public class Main extends JavaPlugin
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
-	}
-	
-	@Deprecated
-	public void restartPlugin()
-	{	
-		Plugin p = Bukkit.getPluginManager().getPlugin("CeltiClan");
-		Bukkit.getServer().getPluginManager().disablePlugin(p);
-		try
-		{
-			Bukkit.getPluginManager().loadPlugin(new File("plugins/CeltiClan.jar"));
-		}
-		catch (UnknownDependencyException | InvalidPluginException| InvalidDescriptionException e)
-		{
-			e.printStackTrace();
-		}
-		p = Bukkit.getPluginManager().getPlugin("CeltiClan");
-		Bukkit.getPluginManager().enablePlugin(p);
 	}
 }
