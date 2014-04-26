@@ -36,6 +36,9 @@ public class Main extends JavaPlugin
 	String user;
 	String pass;
 	String url;
+	String table_players;
+	String table_clan;
+	String table_invit;
 	
 	Config config = new Config();
 	ConfigHome configHome = new ConfigHome();
@@ -52,7 +55,7 @@ public class Main extends JavaPlugin
 		config.setDataFolder(getDataFolder());
 		configHome.setDataFolder(getDataFolder());
 		
-		config.initConfig("BDD.clan.host", "localhost", "BDD.clan.port", "3306", "BDD.clan.database", "CeltiClan", "BDD.clan.user", "root", "BDD.clan.pass", "");
+		config.initConfig("BDD.clan.host", "localhost", "BDD.clan.port", "3306", "BDD.clan.database", "CeltiClan", "BDD.clan.user", "root", "BDD.clan.pass", "", "BDD.clan.table_invit", "clan_invit", "BDD.clan.table_players", "clan_players", "BDD.clan.table_clan", "clan_clan");
 		configHome.initConfig("", "");
 		
 		config.loadConfigFile();
@@ -65,7 +68,10 @@ public class Main extends JavaPlugin
 		port = config.loadInt("BDD.clan.port");
 		user = config.loadString("BDD.clan.user");
 		pass = config.loadString("BDD.clan.pass");
-		
+		table_players = config.loadString("BDD.clan.table_players");
+		table_clan = config.loadString("BDD.clan.table_clan");
+		table_invit = config.loadString("BDD.clan.table_invit");
+				
 		try {
 			getLogger().info("Loading driver...");
 		    Class.forName("com.mysql.jdbc.Driver");
@@ -130,7 +136,7 @@ public class Main extends JavaPlugin
 									
 								case 3:
 									try {
-										ResultSet res = stat.executeQuery("SELECT clan FROM core_clan");
+										ResultSet res = stat.executeQuery("SELECT clan FROM " + table_clan);
 										boolean find = false;
 										
 										while(res.next())
@@ -148,8 +154,8 @@ public class Main extends JavaPlugin
 										}
 										else
 										{
-											stat.executeUpdate("INSERT INTO core_clan (`clan`, `sigle`, `chef`, `invit`) VALUES ('" + args[1] + "', '"+ args[2] +"', '" + p.getUniqueId().toString() + "', '1');");
-											stat.executeUpdate("INSERT INTO core_players (`joueur`, `clan`) VALUES ('" + p.getUniqueId().toString() + "', '"+ args[1] +"');");
+											stat.executeUpdate("INSERT INTO " + table_clan + " (`clan`, `sigle`, `chef`, `invit`) VALUES ('" + args[1] + "', '"+ args[2] +"', '" + p.getUniqueId().toString() + "', '1');");
+											stat.executeUpdate("INSERT INTO " + table_players + " (`joueur`, `clan`) VALUES ('" + p.getUniqueId().toString() + "', '"+ args[1] +"');");
 											p.sendMessage(prefix + ChatColor.GREEN + "Vous avez crée le clan " + args[1] + " !");
 										}
 									} catch (SQLException e1) {
@@ -186,7 +192,7 @@ public class Main extends JavaPlugin
 									String clanName = null;
 									try
 									{
-										res  = stat.executeQuery("SELECT * FROM core_clan");
+										res  = stat.executeQuery("SELECT * FROM " + table_clan);
 										while(res.next())
 										{
 											if(res.getString("clan").equalsIgnoreCase(args[1]))
@@ -199,7 +205,7 @@ public class Main extends JavaPlugin
 										}
 										if(canJoin == true)
 										{
-											res = stat.executeQuery("SELECT * FROM core_players");
+											res = stat.executeQuery("SELECT * FROM " + table_players);
 											while(res.next())
 											{
 												if(res.getString("joueur").equalsIgnoreCase(p.getUniqueId().toString()))
@@ -215,7 +221,7 @@ public class Main extends JavaPlugin
 											
 											if(propClan != true)
 											{
-												res = stat.executeQuery("SELECT * FROM core_clan");
+												res = stat.executeQuery("SELECT * FROM " + table_clan);
 												while(res.next())
 												{
 													if(res.getInt("invit") == 1)
@@ -231,13 +237,13 @@ public class Main extends JavaPlugin
 												
 												if(invitOff == true)
 												{
-													stat.executeUpdate("INSERT INTO core_players (`joueur`, `clan`) VALUES ('" + p.getUniqueId().toString() + "', '"+ args[1] +"');");
+													stat.executeUpdate("INSERT INTO " + table_players + " (`joueur`, `clan`) VALUES ('" + p.getUniqueId().toString() + "', '"+ args[1] +"');");
 													p.sendMessage(prefix + ChatColor.GREEN + "Vous avez rejoint le clan " + args[1] + " !");
 												}
 												else
 												{
 													boolean lol = false;
-													res = stat.executeQuery("SELECT * FROM core_invit");
+													res = stat.executeQuery("SELECT * FROM " + table_invit);
 													while(res.next())
 													{
 														if(res.getString("joueur").equals(p.getUniqueId().toString()) && res.getString("clan").equalsIgnoreCase(clanName))
@@ -248,8 +254,8 @@ public class Main extends JavaPlugin
 													}
 													if(lol == true)
 													{
-														stat.executeUpdate("INSERT INTO core_players (`joueur`, `clan`) VALUES ('" + p.getUniqueId().toString() + "', '"+ args[1] +"');");
-														stat.executeUpdate("DELETE FROM core_invit WHERE joueur='" + p.getUniqueId().toString() + "';");
+														stat.executeUpdate("INSERT INTO " + table_players + " (`joueur`, `clan`) VALUES ('" + p.getUniqueId().toString() + "', '"+ args[1] +"');");
+														stat.executeUpdate("DELETE FROM " + table_invit + " WHERE joueur='" + p.getUniqueId().toString() + "';");
 														p.sendMessage(prefix + ChatColor.GREEN + "Vous avez rejoint le clan " + args[1] + " !");
 													}
 													else
@@ -300,7 +306,7 @@ public class Main extends JavaPlugin
 									ResultSet res = null;
 									try
 									{
-										res = stat.executeQuery("SELECT * FROM core_clan");
+										res = stat.executeQuery("SELECT * FROM " + table_clan);
 										
 										while(res.next())
 										{
@@ -309,13 +315,13 @@ public class Main extends JavaPlugin
 												findInvit = true;
 												if(args[1].equalsIgnoreCase("true"))
 												{
-													stat.executeUpdate("UPDATE core_clan SET invit=0 WHERE `chef`='" + p.getUniqueId().toString() +"'");
+													stat.executeUpdate("UPDATE " + table_clan + " SET invit=0 WHERE `chef`='" + p.getUniqueId().toString() +"'");
 													p.sendMessage(prefix + ChatColor.GREEN + "Vous avez défini les invitations de votre clan a privé");
 													break;
 												}
 												else if(args[1].equalsIgnoreCase("false"))
 												{
-													stat.executeUpdate("UPDATE core_clan SET invit=1 WHERE `chef`='" + p.getUniqueId().toString() +"'");
+													stat.executeUpdate("UPDATE " + table_clan + " SET invit=1 WHERE `chef`='" + p.getUniqueId().toString() +"'");
 													p.sendMessage(prefix + ChatColor.GREEN + "Vous avez défini les invitations de votre clan a libre");
 													break;
 												}
@@ -358,13 +364,13 @@ public class Main extends JavaPlugin
 							String clanName = null;
 							try
 							{
-								res  = stat.executeQuery("SELECT * FROM core_players");
+								res  = stat.executeQuery("SELECT * FROM " + table_players);
 								while(res.next())
 								{
 									if(res.getString("joueur").equalsIgnoreCase(p.getUniqueId().toString()))
 									{
 										findLeave = true;
-										stat.executeUpdate("DELETE FROM core_players WHERE joueur='" + p.getUniqueId().toString() +"'");
+										stat.executeUpdate("DELETE FROM " + table_players + " WHERE joueur='" + p.getUniqueId().toString() +"'");
 										p.sendMessage(prefix + ChatColor.GREEN + "Vous avez quittez votre clan.");
 										break;
 									}
@@ -376,14 +382,14 @@ public class Main extends JavaPlugin
 								}
 								if(findLeave == true)
 								{
-									res  = stat.executeQuery("SELECT * FROM core_clan");
+									res  = stat.executeQuery("SELECT * FROM " + table_clan);
 									while(res.next())
 									{
 										if(res.getString("chef").equalsIgnoreCase(p.getUniqueId().toString()))
 										{
 											clanName = res.getString("clan");
 											deletePlayer = true;
-											stat.executeUpdate("DELETE FROM core_clan WHERE chef='" + p.getUniqueId().toString() +"'");
+											stat.executeUpdate("DELETE FROM " + table_clan + " WHERE chef='" + p.getUniqueId().toString() +"'");
 											p.sendMessage(prefix + ChatColor.GREEN + "et supprimer votre clan !");
 											break;
 										}
@@ -392,7 +398,7 @@ public class Main extends JavaPlugin
 								
 								if(deletePlayer == true)
 								{
-									stat.executeUpdate("DELETE FROM core_players WHERE clan='" + clanName +"'");
+									stat.executeUpdate("DELETE FROM " + table_players + " WHERE clan='" + clanName +"'");
 								}
 							}
 							catch(SQLException e)
@@ -422,7 +428,7 @@ public class Main extends JavaPlugin
 									
 									try
 									{
-										res = stat.executeQuery("SELECT * FROM core_clan");
+										res = stat.executeQuery("SELECT * FROM " + table_clan);
 										
 										while(res.next())
 										{
@@ -437,7 +443,7 @@ public class Main extends JavaPlugin
 										if(findInvit == true)
 										{
 											try {
-												stat.executeUpdate("INSERT INTO `core_invit`(`clan`, `joueur`) VALUES ('" + clanName + "','" + Bukkit.getServer().getPlayer(args[1]).getUniqueId().toString() + "')");
+												stat.executeUpdate("INSERT INTO `" + table_invit + "`(`clan`, `joueur`) VALUES ('" + clanName + "','" + Bukkit.getServer().getPlayer(args[1]).getUniqueId().toString() + "')");
 											} catch (SQLException e) {
 												e.printStackTrace();
 											}
@@ -477,7 +483,7 @@ public class Main extends JavaPlugin
 									
 									try
 									{
-										res = stat.executeQuery("SELECT * FROM core_clan");
+										res = stat.executeQuery("SELECT * FROM " + table_clan);
 										
 										while(res.next())
 										{
@@ -495,7 +501,7 @@ public class Main extends JavaPlugin
 									try
 									{
 										p.sendMessage(prefix + ChatColor.YELLOW + "Liste des joueurs du clan " + args[1] + ":");
-										res1 = stat.executeQuery("SELECT * FROM core_players WHERE clan='" + args[1] + "';");
+										res1 = stat.executeQuery("SELECT * FROM " + table_players + " WHERE clan='" + args[1] + "';");
 										while(res1.next())
 										{
 											UUID uuid = UUID.fromString(res1.getString("joueur"));
@@ -534,7 +540,7 @@ public class Main extends JavaPlugin
 									
 									try
 									{
-										res = stat.executeQuery("SELECT * FROM core_clan");
+										res = stat.executeQuery("SELECT * FROM " + table_clan);
 										
 										while(res.next())
 										{
@@ -560,7 +566,7 @@ public class Main extends JavaPlugin
 											if(findInvit == true)
 											{
 												boolean youMad = false;
-												res = stat.executeQuery("SELECT * FROM core_players");
+												res = stat.executeQuery("SELECT * FROM " + table_players);
 												
 												while(res.next())
 												{
@@ -573,7 +579,7 @@ public class Main extends JavaPlugin
 												
 												if(youMad == true)
 												{
-													stat.executeUpdate("DELETE FROM core_players WHERE joueur='" + playName + "'");
+													stat.executeUpdate("DELETE FROM " + table_players + " WHERE joueur='" + playName + "'");
 													p.sendMessage(prefix + ChatColor.GREEN + "Le joueur " + args[1] + " a été kické !");
 													for(Player onlinePlayer : Bukkit.getServer().getOnlinePlayers())
 													{
@@ -628,7 +634,7 @@ public class Main extends JavaPlugin
 												ResultSet res = null;
 												String clanName = null;
 												
-												res = stat.executeQuery("SELECT * FROM core_clan");
+												res = stat.executeQuery("SELECT * FROM " + table_clan);
 												
 												while(res.next())
 												{
@@ -642,8 +648,8 @@ public class Main extends JavaPlugin
 												
 												if(find == true)
 												{
-													stat.executeUpdate("DELETE FROM core_clan WHERE clan='" + clanName + "'");
-													stat.executeUpdate("DELETE FROM core_players WHERE clan='" + clanName + "'");
+													stat.executeUpdate("DELETE FROM " + table_clan + " WHERE clan='" + clanName + "'");
+													stat.executeUpdate("DELETE FROM " + table_players + " WHERE clan='" + clanName + "'");
 													p.sendMessage(prefix + ChatColor.GREEN + "Le clan " + clanName + " a été supprimé !");
 												}
 												else
@@ -688,7 +694,7 @@ public class Main extends JavaPlugin
 												ResultSet res = null;
 												String playName = null;
 												
-												res = stat.executeQuery("SELECT * FROM core_players");
+												res = stat.executeQuery("SELECT * FROM " + table_clan);
 												
 												while(res.next())
 												{
@@ -702,7 +708,7 @@ public class Main extends JavaPlugin
 												
 												if(find == true)
 												{
-													stat.executeUpdate("DELETE FROM core_players WHERE joueur='" + playName + "'");
+													stat.executeUpdate("DELETE FROM " + table_players + " WHERE joueur='" + playName + "'");
 													p.sendMessage(prefix + ChatColor.GREEN + "Le joueur " + args[2] + " a été kické !");
 													for(Player onlinePlayer : Bukkit.getServer().getOnlinePlayers())
 													{
@@ -737,10 +743,6 @@ public class Main extends JavaPlugin
 							default:
 								break;
 						}
-						break;
-						
-					case "restart":
-						restartPlugin();
 						break;
 						
 					case "sethome":
@@ -780,7 +782,7 @@ public class Main extends JavaPlugin
 							}
 							catch(IllegalArgumentException e)
 							{
-								p.sendMessage("gsojhqothjqoijhoqiejthoisetoyhogxf");
+								p.sendMessage(prefix + ChatColor.RED + "Le home de votre clan a été placé !");
 							}
 						}
 						else
@@ -805,7 +807,7 @@ public class Main extends JavaPlugin
 		
 		try
 		{
-			res = stat.executeQuery("SELECT clan FROM core_players WHERE joueur='" + p.getUniqueId() + "'");
+			res = stat.executeQuery("SELECT clan FROM " + table_players + " WHERE joueur='" + p.getUniqueId() + "'");
 			
 			while(res.next())
 			{
@@ -826,7 +828,7 @@ public class Main extends JavaPlugin
 		
 		try
 		{
-			res = stat.executeQuery("SELECT * FROM core_players WHERE joueur='" + player.getUniqueId().toString() + "'");
+			res = stat.executeQuery("SELECT * FROM " + table_players + " WHERE joueur='" + player.getUniqueId().toString() + "'");
 			
 			while(res.next())
 			{
@@ -859,7 +861,7 @@ public class Main extends JavaPlugin
 		boolean find = false;
 		try
 		{
-			res = stat.executeQuery("SELECT chef FROM core_clan WHERE chef='" + player.getUniqueId().toString() + "'");
+			res = stat.executeQuery("SELECT chef FROM " + table_clan + " WHERE chef='" + player.getUniqueId().toString() + "'");
 			
 			while(res.next())
 			{
@@ -885,7 +887,6 @@ public class Main extends JavaPlugin
 		return false;
 	}
 	
-	@Deprecated
 	public void reloadconfig()
 	{
 		config.loadConfigFile();
@@ -910,22 +911,5 @@ public class Main extends JavaPlugin
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
-	}
-	
-	@Deprecated
-	public void restartPlugin()
-	{	
-		Plugin p = Bukkit.getPluginManager().getPlugin("CeltiClan");
-		Bukkit.getServer().getPluginManager().disablePlugin(p);
-		try
-		{
-			Bukkit.getPluginManager().loadPlugin(new File("plugins/CeltiClan.jar"));
-		}
-		catch (UnknownDependencyException | InvalidPluginException| InvalidDescriptionException e)
-		{
-			e.printStackTrace();
-		}
-		p = Bukkit.getPluginManager().getPlugin("CeltiClan");
-		Bukkit.getPluginManager().enablePlugin(p);
 	}
 }
