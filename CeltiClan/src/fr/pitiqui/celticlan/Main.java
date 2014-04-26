@@ -792,6 +792,7 @@ public class Main extends JavaPlugin
 							stat.executeUpdate("CREATE TABLE clan_players(id INT KEY AUTO_INCREMENT, joueur VARCHAR(255), clan VARCHAR(255))");
 							stat.executeUpdate("CREATE TABLE clan_clan(id INT KEY AUTO_INCREMENT, clan VARCHAR(255), sigle VARCHAR(255), chef VARCHAR(255), invit INT)");
 							stat.executeUpdate("CREATE TABLE clan_invit(id INT KEY AUTO_INCREMENT, clan VARCHAR(255), joueur VARCHAR(255))");
+							sender.sendMessage("Database has been created !");
 						} catch (SQLException e) {
 							// TODO Auto-generated catch block
 							e.printStackTrace();
