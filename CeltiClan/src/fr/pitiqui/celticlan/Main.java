@@ -15,10 +15,6 @@ import org.bukkit.Location;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
-import org.bukkit.plugin.InvalidDescriptionException;
-import org.bukkit.plugin.InvalidPluginException;
-import org.bukkit.plugin.Plugin;
-import org.bukkit.plugin.UnknownDependencyException;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import ru.tehkode.permissions.PermissionUser;
@@ -788,6 +784,17 @@ public class Main extends JavaPlugin
 						else
 						{
 							p.sendMessage(prefix + ChatColor.RED + "Vous n'etes pas dans un clan");
+						}
+						break;
+					
+					case "database":
+						try {
+							stat.executeUpdate("CREATE TABLE clan_players(id INT KEY AUTO_INCREMENT, joueur VARCHAR(255), clan VARCHAR(255))");
+							stat.executeUpdate("CREATE TABLE clan_clan(id INT KEY AUTO_INCREMENT, clan VARCHAR(255), sigle VARCHAR(255), chef VARCHAR(255), invit INT)");
+							stat.executeUpdate("CREATE TABLE clan_invit(id INT KEY AUTO_INCREMENT, clan VARCHAR(255), joueur VARCHAR(255))");
+						} catch (SQLException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
 						}
 						break;
 					
