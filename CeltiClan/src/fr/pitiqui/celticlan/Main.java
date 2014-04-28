@@ -13,6 +13,7 @@ import java.util.UUID;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -356,47 +357,23 @@ public class Main extends JavaPlugin
 							ResultSet res = null;
 							boolean deletePlayer = false;
 							String clanName = null;
-							try
+							if(isInClan(p))
 							{
-								res  = stat.executeQuery("SELECT * FROM " + table_players);
-								while(res.next())
+								try
 								{
-									if(res.getString("joueur").equalsIgnoreCase(p.getUniqueId().toString()))
+									if(isChef(p))
 									{
-										stat.executeUpdate("DELETE FROM " + table_players + " WHERE joueur='" + p.getUniqueId().toString() +"'");
-										p.sendMessage(prefix + ChatColor.GREEN + "Vous avez quittez votre clan.");
-										break;
+										stat.executeUpdate("DELETE FROM " + table_clan + " WHERE chef='" + p.getUniqueId().toString() +"'");
+										stat.executeUpdate("DELETE FROM " + table_players + " WHERE clan='" + clanName +"'");
+										p.sendMessage(prefix + ChatColor.GREEN + "Vous avez supprimez votre clan.");
 									}
+									stat.executeUpdate("DELETE FROM " + table_players + " WHERE joueur='" + p.getUniqueId().toString() +"'");
+									p.sendMessage(prefix + ChatColor.GREEN + "Vous avez quittez votre clan.");
 								}
-								
-								if(!isInClan(p))
+								catch (SQLException e)
 								{
-									p.sendMessage(prefix + ChatColor.RED + "Vous n'êtes pas dans un clan");
+									e.printStackTrace();
 								}
-								else
-								{
-									res  = stat.executeQuery("SELECT * FROM " + table_clan);
-									while(res.next())
-									{
-										if(res.getString("chef").equalsIgnoreCase(p.getUniqueId().toString()))
-										{
-											clanName = res.getString("clan");
-											deletePlayer = true;
-											stat.executeUpdate("DELETE FROM " + table_clan + " WHERE chef='" + p.getUniqueId().toString() +"'");
-											p.sendMessage(prefix + ChatColor.GREEN + "et supprimer votre clan !");
-											break;
-										}
-									}
-								}
-								
-								if(deletePlayer == true)
-								{
-									stat.executeUpdate("DELETE FROM " + table_players + " WHERE clan='" + clanName +"'");
-								}
-							}
-							catch(SQLException e)
-							{
-								e.printStackTrace();
 							}
 						}
 						else
@@ -469,7 +446,7 @@ public class Main extends JavaPlugin
 									
 								case 2:
 									sender.sendMessage(prefix + ChatColor.YELLOW + "Liste des joueurs du clan " + args[1] + ":");
-									for(Player player : getPlayersFromClan(getClan(p)))
+									for(Player player : getPlayersFromClan(getClan(p.getName())))
 									{
 										sender.sendMessage(ChatColor.YELLOW + player.getName());
 									}
@@ -502,7 +479,7 @@ public class Main extends JavaPlugin
 											try
 											{
 												playerName = getServer().getPlayer(args[1]).getUniqueId().toString();
-												if(getClan(getServer().getPlayer(playerName)).equalsIgnoreCase(getClan(p)))
+												if(getClan(playerName).equalsIgnoreCase(getClan(p.getName())))
 												{
 													stat.executeUpdate("DELETE FROM " + table_players + " WHERE joueur='" + playerName + "'");
 													p.sendMessage(prefix + ChatColor.GREEN + "Le joueur " + args[1] + " a été kické !");
@@ -673,12 +650,12 @@ public class Main extends JavaPlugin
 					case "sethome":
 						if(isChef(p))
 						{
-							configHome.setElement("home." + getClan(p) + ".world", p.getLocation().getWorld().getName());
-							configHome.setElement("home." + getClan(p) + ".x", p.getLocation().getBlockX());
-							configHome.setElement("home." + getClan(p) + ".y", p.getLocation().getBlockY());
-							configHome.setElement("home." + getClan(p) + ".z", p.getLocation().getBlockZ());
-							configHome.setElement("home." + getClan(p) + ".pitch", p.getLocation().getPitch());
-							configHome.setElement("home." + getClan(p) + ".yaw", p.getLocation().getYaw());
+							configHome.setElement("home." + getClan(p.getName()) + ".world", p.getLocation().getWorld().getName());
+							configHome.setElement("home." + getClan(p.getName()) + ".x", p.getLocation().getBlockX());
+							configHome.setElement("home." + getClan(p.getName()) + ".y", p.getLocation().getBlockY());
+							configHome.setElement("home." + getClan(p.getName()) + ".z", p.getLocation().getBlockZ());
+							configHome.setElement("home." + getClan(p.getName()) + ".pitch", p.getLocation().getPitch());
+							configHome.setElement("home." + getClan(p.getName()) + ".yaw", p.getLocation().getYaw());
 							p.sendMessage(prefix + ChatColor.GREEN + "Le home de votre clan a été placé !");
 						}
 						else
@@ -690,12 +667,12 @@ public class Main extends JavaPlugin
 					case "home":
 						if(isInClan(p))
 						{
-							String world = configHome.loadString("home." + getClan(p) + ".world");
-							int x = configHome.loadInt("home." + getClan(p) + ".x");
-							int y = configHome.loadInt("home." + getClan(p) + ".y");
-							int z = configHome.loadInt("home." + getClan(p) + ".z");
-							float yaw = (float) configHome.loadDouble("home." + getClan(p) + ".yaw");
-							float pitch = (float) configHome.loadDouble("home." + getClan(p) + ".pitch");
+							String world = configHome.loadString("home." + getClan(p.getName()) + ".world");
+							int x = configHome.loadInt("home." + getClan(p.getName()) + ".x");
+							int y = configHome.loadInt("home." + getClan(p.getName()) + ".y");
+							int z = configHome.loadInt("home." + getClan(p.getName()) + ".z");
+							float yaw = (float) configHome.loadDouble("home." + getClan(p.getName()) + ".yaw");
+							float pitch = (float) configHome.loadDouble("home." + getClan(p.getName()) + ".pitch");
 							final Player player = p;
 							if(y != 0.0)
 							{
@@ -745,9 +722,22 @@ public class Main extends JavaPlugin
 						sender.sendMessage(ChatColor.YELLOW + "/clan leave : Permet de quitter un clan (si vous êtes le chef, cela va supprimer le clan)");
 						sender.sendMessage(ChatColor.YELLOW + "/clan list : Permet de voir tout les clans du serveur");
 						sender.sendMessage(ChatColor.YELLOW + "/clan list <nom du clan> : Permet de voir les joueurs d'un clan");
-						sender.sendMessage(ChatColor.YELLOW + "/clan kick : " + ChatColor.BOLD + ChatColor.RED + "Uniquement pour les chefs" + ChatColor.YELLOW +" : Permet d'expulser un joueur du clan");
+						sender.sendMessage(ChatColor.YELLOW + "/clan kick <nom du joueur> : " + ChatColor.BOLD + ChatColor.RED + "Uniquement pour les chefs" + ChatColor.YELLOW +" : Permet d'expulser un joueur du clan");
 						sender.sendMessage(ChatColor.YELLOW + "/clan sethome : " + ChatColor.BOLD + ChatColor.RED + "Uniquement pour les chefs" + ChatColor.YELLOW +" : Déterminer le home du clan");
 						sender.sendMessage(ChatColor.YELLOW + "/clan home : Téléportation après 5 secondes au home du clan.");
+						sender.sendMessage(ChatColor.YELLOW + "/clan info <nom du joueur> : Vous dit dans quel clan est le joueur.");
+						break;
+						
+					case "info":
+						String clan = getClan(args[1]);
+						if(clan != null)
+						{
+							sender.sendMessage(prefix + ChatColor.YELLOW + "Le joueur " + args[1] + " appartient au clan " + clan + " !");
+						}
+						else
+						{
+							sender.sendMessage(prefix + ChatColor.YELLOW +  "Le joueur n'est dans aucun clan.");
+						}
 						break;
 					
 					default:
@@ -759,18 +749,49 @@ public class Main extends JavaPlugin
 		return false;
 	}
 	
-	public String getClan(Player p)
+	@SuppressWarnings("deprecation")
+	public String getClan(String p)
 	{
 		ResultSet res = null;
 		String result = null;
 		
 		try
 		{
-			res = stat.executeQuery("SELECT clan FROM " + table_players + " WHERE joueur='" + p.getUniqueId() + "'");
+			OfflinePlayer offPlayer = getServer().getOfflinePlayer(p);
+			Player onPlayer = getServer().getPlayer(p);
+			UUID offUUID = null;
+			UUID onUUID = null;
+			boolean isPlayerOnline = false;
+			if(onPlayer != null)
+			{
+				onUUID = onPlayer.getUniqueId();
+				isPlayerOnline = true;
+			}
+			else
+			{
+				offUUID = offPlayer.getUniqueId();
+			}
+
+			res = stat.executeQuery("SELECT * FROM " + table_players);
 			
 			while(res.next())
 			{
-				result = res.getString("clan");
+				if(isPlayerOnline)
+				{
+					if(res.getString("joueur").equalsIgnoreCase(onUUID.toString()))
+					{
+						result = res.getString("clan");
+						break;
+					}
+				}
+				else
+				{
+					if(res.getString("joueur").equalsIgnoreCase(offUUID.toString()))
+					{
+						result = res.getString("clan");
+						break;
+					}
+				}
 			}
 
 		} catch (SQLException e) {
