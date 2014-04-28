@@ -39,7 +39,11 @@ public class Config
 		if(!file.exists())
 		{
 			fileConfig.set(path1, var1);
-			saveConfigFile();
+			try {
+				fileConfig.save(file);
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
 		}
 	}
 	public void initConfig(String path1, String var1, String path2, String var2)
@@ -49,7 +53,11 @@ public class Config
 		{
 			fileConfig.set(path1, var1);
 			fileConfig.set(path2, var2);
-			saveConfigFile();
+			try {
+				fileConfig.save(file);
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
 		}
 	}
 	public void initConfig(String path1, String var1, String path2, String var2, String path3, String var3)
@@ -60,7 +68,11 @@ public class Config
 			fileConfig.set(path1, var1);
 			fileConfig.set(path2, var2);
 			fileConfig.set(path3, var3);
-			saveConfigFile();
+			try {
+				fileConfig.save(file);
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
 		}
 	}
 	public void initConfig(String path1, String var1, String path2, String var2, String path3, String var3, String path4, String var4)
@@ -72,7 +84,11 @@ public class Config
 			fileConfig.set(path2, var2);
 			fileConfig.set(path3, var3);
 			fileConfig.set(path4, var4);
-			saveConfigFile();
+			try {
+				fileConfig.save(file);
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
 		}
 	}
 	public void initConfig(String path1, String var1, String path2, String var2, String path3, String var3, String path4, String var4, String path5, String var5)
@@ -85,7 +101,11 @@ public class Config
 			fileConfig.set(path3, var3);
 			fileConfig.set(path4, var4);
 			fileConfig.set(path5, var5);
-			saveConfigFile();
+			try {
+				fileConfig.save(file);
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
 		}
 	}
 	public void initConfig(String path1, String var1, String path2, String var2, String path3, String var3, String path4, String var4, String path5, String var5, String path6, String var6)
@@ -99,7 +119,11 @@ public class Config
 			fileConfig.set(path4, var4);
 			fileConfig.set(path5, var5);
 			fileConfig.set(path6, var6);
-			saveConfigFile();
+			try {
+				fileConfig.save(file);
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
 		}
 	}
 	public void initConfig(String path1, String var1, String path2, String var2, String path3, String var3, String path4, String var4, String path5, String var5, String path6, String var6, String path7, String var7)
@@ -114,7 +138,11 @@ public class Config
 			fileConfig.set(path5, var5);
 			fileConfig.set(path6, var6);
 			fileConfig.set(path7, var7);
-			saveConfigFile();
+			try {
+				fileConfig.save(file);
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
 		}
 	}
 	
@@ -166,11 +194,7 @@ public class Config
 		}
 	}
 
-	public void initConfig(String path1, String var1, String path2,
-			String var2, String path3, String var3, String path4,
-			String var4, String path5, String var5, String path6,
-			String var6, String path7, String var7, String path8,
-			String var8)
+	public void initConfig(String path1, String var1, String path2, String var2, String path3, String var3, String path4, String var4, String path5, String var5, String path6, String var6, String path7, String var7, String path8, String var8)
 	{
 		loadConfigFile();
 		if(!file.exists())

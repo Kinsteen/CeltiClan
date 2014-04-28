@@ -6,6 +6,7 @@ import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.UUID;
 
@@ -51,6 +52,14 @@ public class Main extends JavaPlugin
 		config.setDataFolder(getDataFolder());
 		configHome.setDataFolder(getDataFolder());
 		
+		config.initConfig("BDD.clan.host", "localhost");
+		config.initConfig("BDD.clan.port", "3306");
+		config.initConfig("BDD.clan.database", "CeltiClan");
+		config.initConfig("BDD.clan.user", "root");
+		config.initConfig("BDD.clan.pass", "");
+		config.initConfig("BDD.clan.table_invit", "clan_invit");
+		config.initConfig("BDD.clan.table_players", "clan_players");
+		config.initConfig("BDD.clan.table_clan", "clan_clan");
 		config.initConfig("BDD.clan.host", "localhost", "BDD.clan.port", "3306", "BDD.clan.database", "CeltiClan", "BDD.clan.user", "root", "BDD.clan.pass", "", "BDD.clan.table_invit", "clan_invit", "BDD.clan.table_players", "clan_players", "BDD.clan.table_clan", "clan_clan");
 		configHome.initConfig("", "");
 		
@@ -298,8 +307,6 @@ public class Main extends JavaPlugin
 									break;
 									
 								case 2:
-									boolean findInvit = false;
-									ResultSet res = null;
 									try
 									{
 										if(isChef(p))
@@ -324,7 +331,6 @@ public class Main extends JavaPlugin
 										else
 										{
 											p.sendMessage(prefix + ChatColor.RED + "Vous n'êtes pas proprietaires d'un clan !");
-											findInvit = false;
 										}
 									}
 									catch (SQLException e)
@@ -349,7 +355,6 @@ public class Main extends JavaPlugin
 						{
 							ResultSet res = null;
 							boolean deletePlayer = false;
-							boolean findLeave = false;
 							String clanName = null;
 							try
 							{
@@ -358,7 +363,6 @@ public class Main extends JavaPlugin
 								{
 									if(res.getString("joueur").equalsIgnoreCase(p.getUniqueId().toString()))
 									{
-										findLeave = true;
 										stat.executeUpdate("DELETE FROM " + table_players + " WHERE joueur='" + p.getUniqueId().toString() +"'");
 										p.sendMessage(prefix + ChatColor.GREEN + "Vous avez quittez votre clan.");
 										break;
@@ -456,41 +460,19 @@ public class Main extends JavaPlugin
 							switch (args.length)
 							{
 								case 1:
-									ResultSet res = null;
-									
-									p.sendMessage(prefix + ChatColor.YELLOW + "Liste des clans :");
-									
-									try
+									sender.sendMessage(prefix + ChatColor.YELLOW + "La liste des clans:");
+									for(String clanName : getAllClan())
 									{
-										res = stat.executeQuery("SELECT * FROM " + table_clan);
-										
-										while(res.next())
-										{
-											p.sendMessage(ChatColor.YELLOW + res.getString("clan"));
-										}
-									}
-									catch(SQLException e)
-									{
-										e.printStackTrace();
+										sender.sendMessage(ChatColor.YELLOW + clanName);
 									}
 									break;
 									
 								case 2:
-									ResultSet resJoueur = null;
-									try
+									sender.sendMessage(prefix + ChatColor.YELLOW + "Liste des joueurs du clan " + args[1] + ":");
+									for(Player player : getPlayersFromClan(getClan(p)))
 									{
-										p.sendMessage(prefix + ChatColor.YELLOW + "Liste des joueurs du clan " + args[1] + ":");
-										resJoueur = stat.executeQuery("SELECT joueur FROM " + table_players + " WHERE clan='" + args[1] + "';");
-										while(resJoueur.next())
-										{
-											p.sendMessage(ChatColor.YELLOW + getServer().getPlayer(UUID.fromString(resJoueur.getString("joueur"))).getName());
-										}
+										sender.sendMessage(ChatColor.YELLOW + player.getName());
 									}
-									catch(SQLException e)
-									{
-										e.printStackTrace();
-									}
-									break;
 	
 								default:
 									p.sendMessage(prefix + ChatColor.RED + "Trop d'arguments !");
@@ -704,16 +686,21 @@ public class Main extends JavaPlugin
 							p.sendMessage(prefix + ChatColor.RED + "Vous n'êtes pas proprietaire du clan !");
 						}
 						break;
-						
+					
 					case "home":
 						if(isInClan(p))
 						{
-							p.sendMessage(prefix + ChatColor.GREEN + "Téléportation dans 5 secondes...");
+							String world = configHome.loadString("home." + getClan(p) + ".world");
+							int x = configHome.loadInt("home." + getClan(p) + ".x");
+							int y = configHome.loadInt("home." + getClan(p) + ".y");
+							int z = configHome.loadInt("home." + getClan(p) + ".z");
+							float yaw = (float) configHome.loadDouble("home." + getClan(p) + ".yaw");
+							float pitch = (float) configHome.loadDouble("home." + getClan(p) + ".pitch");
 							final Player player = p;
-							loc = null;
-							try
+							if(y != 0.0)
 							{
-								loc = new Location(Bukkit.getServer().getWorld(configHome.loadString("home." + getClan(p) + ".world")), configHome.loadInt("home." + getClan(p) + ".x"), configHome.loadInt("home." + getClan(p) + ".y"), configHome.loadInt("home." + getClan(p) + ".z"), (float) configHome.loadDouble("home." + getClan(p) + ".yaw"), (float) configHome.loadDouble("home." + getClan(p) + ".pitch"));
+								p.sendMessage(prefix + ChatColor.GREEN + "Téléportation dans 5 secondes...");
+								loc = new Location(Bukkit.getServer().getWorld(world), x, y, z, yaw, pitch);
 								Bukkit.getScheduler().scheduleSyncDelayedTask(this, new Runnable()
 								{
 									@Override
@@ -723,7 +710,7 @@ public class Main extends JavaPlugin
 									}
 								}, 60L);
 							}
-							catch(IllegalArgumentException e)
+							else
 							{
 								p.sendMessage(prefix + ChatColor.RED + "Le home de votre clan n'a pas été placé !");
 							}
@@ -857,6 +844,50 @@ public class Main extends JavaPlugin
 			e.printStackTrace();
 		}
 		return false;
+	}
+	
+	public ArrayList<String> getAllClan()
+	{
+		ArrayList<String> clan = new ArrayList<String>();
+		ResultSet res = null;
+		
+		try
+		{
+			res = stat.executeQuery("SELECT clan FROM " + table_clan);
+			while(res.next())
+			{
+				clan.add(res.getString("clan"));
+			}
+		}
+		catch(SQLException e)
+		{
+			e.printStackTrace();
+		}
+		return clan;
+	}
+	
+	public ArrayList<Player> getPlayersFromClan(String clan)
+	{
+		ArrayList<Player> players = new ArrayList<Player>();
+		ResultSet res = null;
+		
+		try
+		{
+			res = stat.executeQuery("SELECT * FROM " + table_players + " WHERE clan='" + clan + "'");
+			
+			while(res.next())
+			{
+				UUID uuid = UUID.fromString(res.getString("joueur"));
+				Player p = getServer().getPlayer(uuid);
+				players.add(p);
+			}
+		}
+		catch(SQLException e)
+		{
+			e.printStackTrace();
+		}
+		
+		return players;
 	}
 	
 	public void reloadconfig()
