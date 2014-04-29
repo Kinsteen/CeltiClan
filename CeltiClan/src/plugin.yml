@@ -1,8 +1,8 @@
 name: CeltiClan
 main: fr.pitiqui.celticlan.Main
-version: 0.1.9
+version: 0.1.11
 description: Gestion de clan pour CeltiCraft !
 author: pitiqui
 commands:
   clan:
-    description: Commande principale du plugin !
+    description: Commande principale du plugin ! /clan help pour un aide

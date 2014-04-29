@@ -16,7 +16,7 @@ public class EventListener implements Listener
 	{
 		if(invit.containsKey(e.getPlayer().getUniqueId().toString()))
 		{
-			e.getPlayer().sendMessage(Main.prefix + ChatColor.YELLOW + "Quelq'un vous a invité dans le clan " + invit.get(e.getPlayer().getUniqueId().toString()));
+			e.getPlayer().sendMessage(Main.prefix + ChatColor.YELLOW + "Quelqu'un vous a invité dans le clan " + invit.get(e.getPlayer().getUniqueId().toString()));
 			e.getPlayer().sendMessage(Main.prefix + ChatColor.YELLOW + "Pour rejoindre le clan, faites /clan join " + invit.get(e.getPlayer().getUniqueId().toString()));
 		}
 	}
