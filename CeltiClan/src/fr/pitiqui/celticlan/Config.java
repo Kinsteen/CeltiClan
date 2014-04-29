@@ -161,31 +161,37 @@ public class Config
 	
 	public Object loadElement(String path)
 	{
+		loadConfigFile();
 		return fileConfig.get(path);
 	}
 	
 	public int loadInt(String path)
 	{
+		loadConfigFile();
 		return fileConfig.getInt(path);
 	}
 	
 	public String loadString(String path)
 	{
+		loadConfigFile();
 		return fileConfig.getString(path);
 	}
 	
 	public double loadDouble(String path)
 	{
+		loadConfigFile();
 		return fileConfig.getDouble(path);
 	}
 	
 	public boolean loadBoolean(String path)
 	{
+		loadConfigFile();
 		return fileConfig.getBoolean(path);
 	}
 
 	public void setElement(String path, Object var)
 	{
+		loadConfigFile();
 		fileConfig.set(path, var);
 		try {
 			fileConfig.save(file);
