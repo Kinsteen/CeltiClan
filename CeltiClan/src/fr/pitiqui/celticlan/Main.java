@@ -5,9 +5,12 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
 import java.util.HashMap;
+
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
+import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public class Main extends JavaPlugin
@@ -25,6 +28,7 @@ public class Main extends JavaPlugin
 	String table_players;
 	String table_clan;
 	String table_invit;
+	String table_ally;
 	
 	Config config = new Config();
 	ConfigHome configHome = new ConfigHome();
@@ -32,9 +36,20 @@ public class Main extends JavaPlugin
 	Connection connection = null;
 	Statement stat;
 	
+	ClanCommandExecutor clan = new ClanCommandExecutor(this);
+	
 	Location loc = null;
 	
 	static HashMap<String, String> invit = new HashMap<String, String>();
+	
+	/**
+	 * First argument: the player
+	 * Second argument: the channel
+	 * "p": public
+	 * "c": clan
+	 * "a": alliance
+	 */
+	static HashMap<Player, String> chat = new HashMap<Player, String>();
 	
 	public void onEnable()
 	{
@@ -56,7 +71,7 @@ public class Main extends JavaPlugin
 		config.loadConfigFile();
 		configHome.loadConfigFile();
 		
-		getServer().getPluginManager().registerEvents(new EventListener(), this);
+		getServer().getPluginManager().registerEvents(new EventListener(this), this);
 		getCommand("clan").setExecutor(new ClanCommandExecutor(this));
 		//getCommand("guerre").setExecutor(new WarCommandExecutor(this));
 		
@@ -68,6 +83,7 @@ public class Main extends JavaPlugin
 		table_players = config.loadString("BDD.clan.table_players");
 		table_clan = config.loadString("BDD.clan.table_clan");
 		table_invit = config.loadString("BDD.clan.table_invit");
+		table_ally = config.loadString("BDD.clan.table_ally");
 				
 		try {
 			getLogger().info("Loading driver...");
@@ -91,6 +107,11 @@ public class Main extends JavaPlugin
 			stat = connection.createStatement();
 		} catch (SQLException e) {
 			e.printStackTrace();
+		}
+		
+		for(Player p : getServer().getOnlinePlayers())
+		{
+			chat.put(p, "p");
 		}
 	}
 	

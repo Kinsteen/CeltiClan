@@ -3,12 +3,14 @@ package fr.pitiqui.celticlan;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.UUID;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.OfflinePlayer;
+import org.bukkit.Sound;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -40,7 +42,7 @@ public class ClanCommandExecutor implements CommandExecutor
 		{
 			if(args.length == 0)
 			{
-				p.sendMessage(ChatColor.RED + "CeltiClan v0.1.11B");
+				p.sendMessage(ChatColor.RED + "CeltiClan v0.2.0");
 			}
 			else
 			{
@@ -278,14 +280,18 @@ public class ClanCommandExecutor implements CommandExecutor
 							{
 								try
 								{
+									clanName = getClan(p.getName());
 									p.sendMessage(Main.prefix + ChatColor.GREEN + "Vous avez quittez votre clan.");
 									if(isChef(p))
 									{
-										plugin.stat.executeUpdate("DELETE FROM " + plugin.table_clan + " WHERE chef='" + p.getUniqueId().toString() +"'");
-										plugin.stat.executeUpdate("DELETE FROM " + plugin.table_players + " WHERE clan='" + clanName +"'");
+										plugin.stat.executeUpdate("DELETE FROM " + plugin.table_clan + " WHERE chef='" + p.getUniqueId().toString() + "'");
+										plugin.stat.executeUpdate("DELETE FROM " + plugin.table_players + " WHERE clan='" + clanName + "'");
 										p.sendMessage(Main.prefix + ChatColor.GREEN + "et supprimez votre clan.");
 									}
-									plugin.stat.executeUpdate("DELETE FROM " + plugin.table_players + " WHERE joueur='" + p.getUniqueId().toString() +"'");
+									else
+									{
+										plugin.stat.executeUpdate("DELETE FROM " + plugin.table_players + " WHERE joueur='" + p.getUniqueId().toString() +"'");
+									}
 								}
 								catch (SQLException e)
 								{
@@ -647,10 +653,9 @@ public class ClanCommandExecutor implements CommandExecutor
 							}
 							else
 							{
-								String clan = getClan(args[1]);
-								if(clan != null)
+								if(!getClan(args[1]).equalsIgnoreCase(""))
 								{
-									sender.sendMessage(Main.prefix + ChatColor.YELLOW + "Le joueur " + args[1] + " appartient au clan " + clan + " !");
+									sender.sendMessage(Main.prefix + ChatColor.YELLOW + "Le joueur " + args[1] + " appartient au clan " + getClan(args[1]) + " !");
 								}
 								else
 								{
@@ -672,10 +677,14 @@ public class ClanCommandExecutor implements CommandExecutor
 								{
 									if(!clanExist(args[1]))
 									{
-										try {
-											plugin.stat.executeUpdate("UPDATE core_clan SET clan='" + args[1] + "' WHERE chef='" + p.getUniqueId().toString() + "'");
+										try
+										{
+											changeNameClan(getClan(p.getName()), args[1]);
+											plugin.stat.executeUpdate("UPDATE " + plugin.table_clan + " SET clan='" + args[1] + "' WHERE chef='" + p.getUniqueId().toString() + "'");
 											p.sendMessage(Main.prefix + ChatColor.GREEN + "Vous avez renommé votre clan en " + args[1]);
-										} catch (SQLException e) {
+										}
+										catch (SQLException e)
+										{
 											e.printStackTrace();
 										}
 									}
@@ -693,6 +702,110 @@ public class ClanCommandExecutor implements CommandExecutor
 							default:
 								p.sendMessage(Main.prefix + ChatColor.RED + "Trop d'arguments !");
 								break;
+						}
+						break;
+						
+					case "ally":
+						switch (args.length)
+						{
+							case 1:
+								p.sendMessage(Main.prefix + ChatColor.RED + "Vous devez préciser un create, delete...");
+								break;
+							
+							case 2:
+								p.sendMessage(Main.prefix + ChatColor.RED + "Vous devez préciser un nom de clan !");
+								break;
+							
+							case 3:
+								if(isChef(p))
+								{
+									if(clanExist(args[2]))
+									{
+										if(!allyExist(getClan(p.getName()), args[2]))
+										{
+											try
+											{
+												plugin.stat.executeUpdate("INSERT INTO core_ally (`declareur`, `ally`) VALUES ('" + getClan(p.getName()) + "', '" + args[2] + "');");
+												p.sendMessage(Main.prefix + ChatColor.GREEN + "Vous avez créer une alliance avec le clan " + args[2] + " !");
+												p.playSound(p.getLocation(), Sound.SUCCESSFUL_HIT, 1.0F, 0.0F);
+												for(Player player : Bukkit.getServer().getOnlinePlayers())
+												{
+													if(isChef(player) && getClan(player.getName()).equalsIgnoreCase(args[2]))
+													{
+														player.sendMessage(Main.prefix + ChatColor.YELLOW + "Le clan " + getClan(p.getName()) + " vous a ajouté en allié !");
+														player.playSound(player.getLocation(), Sound.SUCCESSFUL_HIT, 1.0F, 1.0F);
+													}
+												}
+											}
+											catch (SQLException e)
+											{
+												p.sendMessage(e.getMessage());
+												e.printStackTrace();
+											}
+										}
+										else
+										{
+											p.sendMessage(Main.prefix + ChatColor.RED + "Vous avez déjà une alliance avec ce clan !");
+										}
+									}
+									else
+									{
+										p.sendMessage(Main.prefix + ChatColor.RED + "Le clan n'existe pas !");
+									}
+								}
+								else
+								{
+									p.sendMessage(Main.prefix + ChatColor.RED + "Vous n'êtes pas proprietaire du clan !");
+								}
+								break;
+	
+							default:
+								break;
+						}
+						break;
+						
+					case "chat":
+						HashMap<Player, String> chat = Main.chat;
+						
+						if(args.length == 1)
+						{	
+							if(chat.get(p).equalsIgnoreCase("p"))
+							{
+								chat.put(p, "c");
+								p.sendMessage(Main.prefix + ChatColor.YELLOW + "Vous parlez maintenant de le chat de votre clan !");
+							}
+							else if(chat.get(p).equalsIgnoreCase("c"))
+							{
+								chat.put(p, "a");
+								p.sendMessage(Main.prefix + ChatColor.YELLOW + "Vous parlez maintenant dans le chat alliance !");
+							}
+							else if(chat.get(p).equalsIgnoreCase("a"))
+							{
+								chat.put(p, "p");
+								p.sendMessage(Main.prefix + ChatColor.YELLOW + "A présent, tout le monde vous entend !");
+							}
+						}
+						else if(args.length == 2)
+						{
+							if(args[1].equalsIgnoreCase("p"))
+							{
+								chat.put(p, "p");
+								p.sendMessage(Main.prefix + ChatColor.YELLOW + "A présent, tout le monde vous entend !");
+							}
+							else if(args[1].equalsIgnoreCase("c"))
+							{
+								chat.put(p, "c");
+								p.sendMessage(Main.prefix + ChatColor.YELLOW + "Vous parlez maintenant de le chat de votre clan !");
+							}
+							else if(args[1].equalsIgnoreCase("a"))
+							{
+								chat.put(p, "a");
+								p.sendMessage(Main.prefix + ChatColor.YELLOW + "Vous parlez maintenant dans le chat alliance !");
+							}
+						}
+						else
+						{
+							p.sendMessage(Main.prefix + ChatColor.RED + "Trop d'arguments !");
 						}
 						break;
 					
@@ -884,7 +997,6 @@ public class ClanCommandExecutor implements CommandExecutor
 		return clan;
 	}
 	
-	@Deprecated
 	public ArrayList<Player> getOnlinePlayersFromClan(String clan)
 	{
 		ArrayList<Player> players = new ArrayList<Player>();
@@ -967,6 +1079,142 @@ public class ClanCommandExecutor implements CommandExecutor
 		else
 		{
 			p.sendMessage(Main.prefix + ChatColor.RED + "Le home de votre clan n'a pas été placé !");
+		}
+	}
+	
+	public boolean allyExist(String clan, String ally)
+	{
+		ResultSet res = null;
+		
+		try
+		{
+			res = plugin.stat.executeQuery("SELECT * FROM " + plugin.table_ally);
+			
+			while(res.next())
+			{
+				if(res.getString("declareur").equalsIgnoreCase(clan) && res.getString("ally").equalsIgnoreCase(ally))
+				{
+					return true;
+				}
+			}
+		}
+		catch(SQLException e)
+		{
+			e.printStackTrace();
+		}
+		return false;
+	}
+	
+	public ArrayList<String> getAllys(String clan)
+	{
+		ArrayList<String> ally = new ArrayList<String>();
+		ResultSet res = null;
+		
+		try
+		{
+			res = plugin.stat.executeQuery("SELECT * FROM core_ally");
+			
+			while(res.next())
+			{
+				if(res.getString("declareur").equalsIgnoreCase(clan))
+				{
+					ally.add(res.getString("ally"));
+				}
+				else if(res.getString("ally").equalsIgnoreCase(clan))
+				{
+					ally.add(res.getString("declareur"));
+				}
+			}
+		}
+		catch(SQLException e)
+		{
+			e.printStackTrace();
+		}
+		
+		return ally;
+	}
+	
+	public void changeNameClan(String ancienName, String newName)
+	{
+		ArrayList<String> players = new ArrayList<String>();
+		ResultSet res = null;
+		
+		try
+		{
+			res = plugin.stat.executeQuery("SELECT * FROM " + plugin.table_players);
+			
+			while(res.next())
+			{
+				if(res.getString("clan").equalsIgnoreCase(ancienName))
+				{
+					players.add(res.getString("joueur"));
+				}
+			}
+			
+			for(String player : players)
+			{
+				String sql = "UPDATE " + plugin.table_players + " SET clan='" + newName + "' WHERE joueur='" + player +"'";
+				plugin.stat.executeUpdate(sql);
+			}
+			
+			res = plugin.stat.executeQuery("SELECT * FROM " + plugin.table_ally);
+			
+			ArrayList<Integer> clanDec = new ArrayList<Integer>();
+			
+			while(res.next())
+			{
+				if(res.getString("declareur").equalsIgnoreCase(ancienName))
+				{
+					clanDec.add(res.getInt("id"));
+				}
+			}
+			
+			for(int clan : clanDec)
+			{
+				String sql = "UPDATE " + plugin.table_ally + " SET declareur='" + newName + "' WHERE id='" + clan +"'";
+				plugin.stat.executeUpdate(sql);
+			}
+			
+			res = plugin.stat.executeQuery("SELECT * FROM " + plugin.table_ally);
+			
+			ArrayList<Integer> clanCib = new ArrayList<Integer>();
+			
+			while(res.next())
+			{
+				if(res.getString("ally").equalsIgnoreCase(ancienName))
+				{
+					clanCib.add(res.getInt("id"));
+				}
+			}
+			
+			for(int clan : clanCib)
+			{
+				String sql = "UPDATE " + plugin.table_ally + " SET ally='" + newName + "' WHERE id='" + clan +"'";
+				plugin.stat.executeUpdate(sql);
+			}
+			
+			res = plugin.stat.executeQuery("SELECT * FROM " + plugin.table_invit);
+			
+			ArrayList<Integer> claninvit = new ArrayList<Integer>();
+			
+			while(res.next())
+			{
+				if(res.getString("clan").equalsIgnoreCase(ancienName))
+				{
+					claninvit.add(res.getInt("id"));
+				}
+			}
+			
+			for(int clan : claninvit)
+			{
+				String sql = "UPDATE " + plugin.table_invit + " SET clan='" + newName + "' WHERE id='" + clan +"'";
+				plugin.stat.executeUpdate(sql);
+			}
+		}
+		catch(SQLException e)
+		{
+			Bukkit.getLogger().warning(e.getMessage());
+			e.printStackTrace();
 		}
 	}
 }
